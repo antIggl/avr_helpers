@@ -79,6 +79,26 @@ class AvrDude(SerialDevice):
         return stdout, stderr
 
     def flash(self, hex_path, extra_flags=None):
+        return self.writeFLASH(hex_path,extra_flags)
+
+    def writeEEPROM(self, hex_path, extra_flags=None):
+        hex_path = path(hex_path)
+        flags = ['-c', self.protocol, '-b', str(self.baud_rate), '-p',
+                 self.microcontroller, '-P', '%s' % self.port, '-U',
+                 'eeprom:w:%s:i' % hex_path.name, '-C', '%(avrconf)s']
+        if extra_flags is not None:
+            flags.extend(extra_flags)
+
+        try:
+            cwd = os.getcwd()
+            os.chdir(hex_path.parent)
+            stdout, stderr = self._run_command(flags)
+        finally:
+            os.chdir(cwd)
+        return stdout, stderr
+
+
+    def writeFLASH(self, hex_path, extra_flags=None):
         hex_path = path(hex_path)
         flags = ['-c', self.protocol, '-b', str(self.baud_rate), '-p',
                  self.microcontroller, '-P', '%s' % self.port, '-U',
@@ -93,6 +113,40 @@ class AvrDude(SerialDevice):
         finally:
             os.chdir(cwd)
         return stdout, stderr
+
+    def readEEPROM(self, hex_path, extra_flags=None):
+        hex_path = path(hex_path)
+        flags = ['-c', self.protocol, '-b', str(self.baud_rate), '-p',
+                 self.microcontroller, '-P', '%s' % self.port, '-U',
+                 'eeprom:r:%s:i' % hex_path.name, '-C', '%(avrconf)s']
+        if extra_flags is not None:
+            flags.extend(extra_flags)
+
+        try:
+            cwd = os.getcwd()
+            os.chdir(hex_path.parent)
+            stdout, stderr = self._run_command(flags)
+        finally:
+            os.chdir(cwd)
+        return stdout, stderr
+
+
+    def readFLASH(self, hex_path, extra_flags=None):
+        hex_path = path(hex_path)
+        flags = ['-c', self.protocol, '-b', str(self.baud_rate), '-p',
+                 self.microcontroller, '-P', '%s' % self.port, '-U',
+                 'flash:r:%s:i' % hex_path.name, '-C', '%(avrconf)s']
+        if extra_flags is not None:
+            flags.extend(extra_flags)
+
+        try:
+            cwd = os.getcwd()
+            os.chdir(hex_path.parent)
+            stdout, stderr = self._run_command(flags)
+        finally:
+            os.chdir(cwd)
+        return stdout, stderr
+
 
     def test_connection(self, port, baud_rate):
         '''
